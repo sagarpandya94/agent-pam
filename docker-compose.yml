@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  # Mock EC2 target — SSH-enabled Ubuntu container
+  target:
+    build:
+      context: ./target/docker
+    container_name: pam-target
+    ports:
+      - "2222:22"       # SSH exposed on localhost:2222
+    volumes:
+      - target-data:/home/ubuntu
+    restart: unless-stopped
+
+  # PAM Vault API
+  vault:
+    build:
+      context: ./vault
+    container_name: pam-vault
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - vault-data:/app/data
+    restart: unless-stopped
+
+  # Audit Dashboard
+  dashboard:
+    build:
+      context: ./audit/dashboard
+    container_name: pam-dashboard
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - vault-data:/app/data    # shared so dashboard can read audit DB
+    restart: unless-stopped
+
+volumes:
+  target-data:
+  vault-data:
