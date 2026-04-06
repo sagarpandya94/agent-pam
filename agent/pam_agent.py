@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from typing import Iterator, Optional
 from anthropic import Anthropic
+import re
 
 from agent.tools.checkout_tool import checkout_credential, CheckoutError, CHECKOUT_TOOL
 from agent.tools.ssh_tool import ssh_execute, SSH_TOOL
@@ -200,12 +201,17 @@ def run_agent(
             for block in response.content:
                 if block.type == "tool_use":
                     if stream_callback:
-                        stream_callback(f"\n[Tool: {block.name}({json.dumps(block.input)})]\n")
+                        safe_input = {
+                            k: ("***redacted***" if k == "token" else v)
+                            for k, v in block.input.items()
+                        }
+                        stream_callback(f"\n[Tool: {block.name}({json.dumps(safe_input)})]\n")
 
                     result_str = _handle_tool_call(block.name, block.input)
 
                     if stream_callback:
-                        stream_callback(f"[Result: {result_str[:200]}...]\n")
+                        safe_result = re.sub(r'"token"\s*:\s*"[^"]{20,}"', '"token": "***redacted***"', result_str)
+                        stream_callback(f"[Result: {safe_result[:200]}...]\n")
 
                     tool_results.append({
                         "type": "tool_result",

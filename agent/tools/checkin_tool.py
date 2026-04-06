@@ -58,7 +58,7 @@ def checkin_credential(token: str) -> dict:
         detail={"status": "checked_in"},
     )
 
-    return {"status": "checked_in", "token": token}
+    return {"status": "checked_in"}
 
 
 # Claude tool definition
