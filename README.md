@@ -1,3 +1,7 @@
+## Demo
+
+![agent-pam demo](assets/pam-agent-in-action.gif)
+
 # agent-pam
 
 **PAM (Privileged Access Management) for AI Agents**
